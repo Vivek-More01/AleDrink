@@ -1,0 +1,88 @@
+{
+    "name": "Controls",
+    "maps": [
+        {
+            "name": "PlayerDrink",
+            "id": "49e41699-353d-4a51-b3f5-cc3376a16b3c",
+            "actions": [
+                {
+                    "name": "Drink",
+                    "type": "Button",
+                    "id": "c27ec55d-ddc1-407d-b883-59f853140cb4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "SlowTap",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shrink",
+                    "type": "Button",
+                    "id": "c810aef3-b02c-4a2d-bc1d-caa396e5c1f2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "40c2a65e-d0b9-445b-96df-b76ddc9be8b3",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mobile",
+                    "action": "Drink",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c25303cc-bb54-4e78-834b-5da976caa888",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Drink",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fafb996c-dbf9-4dd6-90b0-20c0875a4334",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shrink",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ee2e155f-18c1-49b4-8b7a-6c0f08819284",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shrink",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Mobile",
+            "bindingGroup": "Mobile",
+            "devices": [
+                {
+                    "devicePath": "<Touchscreen>/{PrimaryTrigger}",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
