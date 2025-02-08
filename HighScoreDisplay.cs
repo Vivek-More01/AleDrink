@@ -1,7 +1,5 @@
 /**This Script is used to Display the Highest Score the player achieved */
 
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 

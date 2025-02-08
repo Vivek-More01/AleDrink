@@ -10,6 +10,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Logic : MonoBehaviour
@@ -18,32 +19,39 @@ public class Logic : MonoBehaviour
     [SerializeField] private GameObject drinkButton;        //Object for Button
     [SerializeField] private double progressBarFinal;       //Max length of progressBar
     [SerializeField] private int starValue;                 //A Multiplier for score
-    private bool pressable = false;                         //Bool for knowing if it is possible to Input
-    public bool animatable = false;                         //Bool for knowing if animations should be allowed
-    private int successivePressCount = 1;                   //Successful Press count is a additive increment in score
-    static public int perfectPressCount = 0;                //It is the star count and is a multiplicative increment in score
+    private bool pressable;                         //Bool for knowing if it is possible to Input
+    public bool animatable;                         //Bool for knowing if animations should be allowed
+    private int successivePressCount;                   //Successful Press count is a additive increment in score
+    static public int perfectPressCount ;                //It is the star count and is a multiplicative increment in score
     private double progressBarInitialScaleX;                //Lowest length for progress bar, keep it 1
     private double progressBarCurrentScaleX;                //Stores the current length of progressBar
     private double cooldown;                                //Cooldown between successive clicks
-    private float time;                                     //Stores the amount of time elapsed
+    //private float time;                                     //Stores the amount of time elapsed
     [SerializeField]private float min;                      //minimum value of cooldown
     [SerializeField]private float max;                      //maximum value of cooldown
     private int maxScore;                                   //maxScore
-
+    [SerializeField] GameObject cooldownObject;
 
     private void Start()                //Initialise some variables
-    { 
+    {
+        Time.fixedDeltaTime = 0.0166666666666667f;
         progressBarInitialScaleX = progressBar.transform.localScale.x;
-        cooldown = 200 * Time.deltaTime;
-        time = 0;
+        perfectPressCount = 0;
+        pressable = false;
+        animatable = false;
+        successivePressCount = 2;
+        cooldown = 240*Time.deltaTime;
+        //time = 0;
         maxScore = 0;
+        Time.timeScale = 1;
     }
 
-    private void Update()               //Update Block
+    private void FixedUpdate()               //Update Block
     {
         progressBarCurrentScaleX = progressBar.transform.localScale.x;      //Get the current lrngth of progress Bar
-        double progressReduction = 0.00001 * (progressBarCurrentScaleX + progressBarFinal); //Calculate progress Reduction factor
-        
+        double progressReduction = 0.00005 * (progressBarCurrentScaleX); //Calculate progress Reduction factor
+        if (Time.timeScale == 0) { progressReduction = 0; }
+
         //I added a mechanic by which the size of progress bar and score also decreases with time
         progressBar.transform.localScale = new Vector3(
                 (float)Math.Clamp(progressBarCurrentScaleX - progressBarFinal * progressReduction, progressBarInitialScaleX, progressBarFinal), // Clamp to avoid exceeding the target
@@ -51,18 +59,27 @@ public class Logic : MonoBehaviour
                 progressBar.transform.localScale.z);
 
         //Cooldown is a variable I use to track all of the time in the game
-        cooldown -= 0.01;
+        cooldown -= Time.deltaTime;
         pressable = IsPressPossible();          //Check if Input is possible
         animatable = IsAnimationPossible();     //Check if Animations are possible
-        time += Time.deltaTime;                 //Purpose of time variable is for the time counter
+        //time += Time.deltaTime;                 //Purpose of time variable is for the time counter
         
         //When player misses a click, cooldown is reset
         if (cooldown < -1)
         {
-            successivePressCount = 1;   //Resetting the value of sPC. Explained in UpdateSquareScale() method
+            successivePressCount = 2;   //Resetting the value of sPC. Explained in UpdateSquareScale() method
 
             //I randomized the cooldown between min and max
             cooldown = UnityEngine.Random.Range((int)min, (int)max);
+        }
+
+        if (cooldown+0.5 <= 1)
+        {
+            cooldownObject.GetComponent<Animator>().SetBool("IsCDZero", true); 
+        }
+        else
+        {
+            cooldownObject.GetComponent<Animator>().SetBool("IsCDZero", false);
         }
     }
 
@@ -71,18 +88,19 @@ public class Logic : MonoBehaviour
     {
        if (progressBar != null) //Check if progressBar is assigned
         { 
-            double scaleFactor = (progressBarFinal - progressBarInitialScaleX) / 10;    //Calculate a scalefactor independent of current bar length
-            
+            double scaleFactor = (progressBarFinal - progressBarCurrentScaleX) / 9;    //Calculate a scalefactor independent of current bar length
+
             //successfulPressCount scales the scale factor, its value depends on past inputs of user
-            double newYScale = scaleFactor * successivePressCount;
-            
+            double newYScale;
+            if (successivePressCount > 0) { newYScale = scaleFactor * (3-successivePressCount); }
+            else { newYScale = scaleFactor * (3); }
 
             // Debugging output to confirm the scale change logic
             Debug.Log($"Updating Square Y Scale: {newYScale}");
 
             // Update only the X scale of the progressBar, I modified the function to be a combination of final length, current length and newYscale
             progressBar.transform.localScale = new Vector3(
-                (float)Math.Clamp((newYScale) * (progressBarFinal- progressBarCurrentScaleX)/10 + progressBarCurrentScaleX, 0 , progressBarFinal), // Clamp to avoid exceeding the target
+                (float)Math.Clamp((newYScale) * scaleFactor + progressBarCurrentScaleX, 0 , progressBarFinal), // Clamp to avoid exceeding the target
                 progressBar.transform.localScale.y,
                 progressBar.transform.localScale.z
             );
@@ -100,7 +118,7 @@ public class Logic : MonoBehaviour
         if (!pressable) //Check if input is not possible
         {
             Debug.Log($"Wait for cooldown: {cooldown}");
-            successivePressCount = 1;   //Reset value of succesive counts
+            //successivePressCount = 1;   //Reset value of succesive counts
         }
         else
         {   
@@ -127,22 +145,11 @@ public class Logic : MonoBehaviour
         double timeDif = cooldown;
         if (Math.Abs(timeDif) < 0.5) //if cooldown between 0.5 and -0.5, it's perfect press 
         {
-          
+
             perfectPressCount++;    //Update count of perfect presses
             CalculateScore();       //Calculate score
-            
-            if (successivePressCount < 3)
-            {
-                successivePressCount += 2;  //Increase successive press count by two
-            };
         }
-        else    //For non-perfect presses
-        {
-            if (successivePressCount < 3)
-            {
-                successivePressCount++;     //Increase successive press count by one
-            };
-        }
+        successivePressCount--;
     }
 
     //Calculating Score
@@ -172,47 +179,36 @@ public class Logic : MonoBehaviour
     public bool IsAnimationPossible()
     {
         //print(cooldown);
-        if (cooldown <= 1.5)
+        if (cooldown <= 1)
         {
             return true;
         }
         else { return false; }
     }
 
-    //Function to reset values of all variables
-    public void ResetValues()
-    {
-        cooldown = 200f * Time.deltaTime;
-        animatable = false;
-        perfectPressCount = 0;
-        successivePressCount = 0;
-        time = 0;
-        Time.timeScale = 1f;
-        progressBarCurrentScaleX = progressBarInitialScaleX;
-        Debug.Log($"{time}");
-    }
-
-    //Below functions are for message Passing to other scripts
-    public double ReturnCoolDown()
-    {
-        return cooldown;
-    }
     public int ReturnStarCount()
     {
         return perfectPressCount;
-    }
-
-    public int ReturnTimeValue() {
-        return (int)time;   
-    }
-
-    public float ReturnTime()
-    {
-        return time;
     }
 
     public int MaxScore()
     {
         return maxScore;
     }
+    //void Awake()
+    //{
+    //    StartCoroutine("UpdateTexts");
+    //}
+
+    //IEnumerator UpdateTexts()
+    //{
+    //    while (true)
+    //    {
+    //        GameObject.Find("Amount_Coal").GetComponent<UnityEngine.UI.Text>().text = Coal + "/" + Space;
+    //        GameObject.Find("txtAmountCoins").GetComponent<UnityEngine.UI.Text>().text = Coins.ToString();
+    //        GameObject.Find("txt_PickaxePrice").GetComponent<UnityEngine.UI.Text>().text = ((int)Mathf.Round(Mathf.Pow(LevelPickaxe, 2) * 200) * (LevelPickaxe / 25 + 1)).ToString();
+    //        GameObject.Find("txt_PriceInv").GetComponent<UnityEngine.UI.Text>().text = ((int)Mathf.Round(Mathf.Pow(LevelInv, 2) * 100) * (LevelInv / 25 + 1)).ToString();
+    //        yield return null;
+    //    }
+    //}
 }

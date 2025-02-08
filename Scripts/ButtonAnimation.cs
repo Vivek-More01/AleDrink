@@ -1,7 +1,5 @@
 /**Script for allowing button clicks. I will remove this one soon and merge it with TimeIndicator script.*/
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ButtonAnimation : MonoBehaviour
